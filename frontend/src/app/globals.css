@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+.mnda-document {
+  font-family:
+    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+  }
+  .document-pane {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .mnda-document {
+    box-shadow: none !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0.5in !important;
+  }
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+}
