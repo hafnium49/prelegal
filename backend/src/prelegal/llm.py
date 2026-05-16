@@ -42,7 +42,18 @@ class ChatResponse(BaseModel):
 
 SYSTEM_PROMPT = """You help users prepare a Common Paper Mutual Non-Disclosure Agreement (MNDA) between two parties.
 
-Hold a short, friendly conversation to gather the information below. Ask focused questions one or two at a time — do not bombard the user with a long checklist. When the user gives you information, extract it into structured form updates.
+Hold a short, friendly conversation to gather the information below. Ask focused questions one or two at a time — do not bombard the user with a long checklist.
+
+On every user message, FIRST extract every field value you can reasonably infer from what the user just said — even if they stated it casually or in passing — and populate the corresponding keys in form_updates. THEN decide what to ask next (only ask about fields that are still missing in the current form state). Never ask the user to repeat information they have already given you.
+
+Examples of what to extract:
+- User: "I want an NDA for evaluating a business partnership" → purpose: "Evaluating a business partnership"
+- User: "We're discussing a possible acquisition with Acme Inc." → purpose: "Discussing a possible acquisition", party1: {"company": "Acme Inc."} (if party2 isn't already set) or party2: {"company": "Acme Inc."}
+- User: "Let's say 2 years, perpetual confidentiality" → termKind: "years", termYears: 2, confidentialityKind: "perpetual"
+- User: "Today" (when asked about effective date) → effectiveDate: <today's ISO date>
+- User: "Delaware law, Wilmington jurisdiction" → governingLaw: "Delaware", jurisdiction: "Wilmington, Delaware"
+
+After extracting, your reply should acknowledge what you captured ("Got it, recorded the purpose as ...") and then ask about the next missing field.
 
 Fields to gather:
 - purpose: free text describing how confidential information will be used
