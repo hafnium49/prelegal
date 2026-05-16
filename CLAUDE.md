@@ -21,7 +21,7 @@ When instructed to build a feature:
 
 When writing code to make calls to LLMs, use your Cerebras skill to use LiteLLM via OpenRouter to the `openrouter/openai/gpt-oss-120b` model with Cerebras as the inference provider. You should use Structured Outputs so that you can interpret the results and populate fields in the legal document.
 
-Add an `OPENROUTER_API_KEY` to the `.env` file at the project root before wiring up the AI calls (the file currently only holds the GitHub PAT).
+`OPENROUTER_API_KEY` lives in `.env` at the project root and is loaded by `load_dotenv()` in `create_app()`. When running in Docker, pass it through with `docker run --env-file .env ...` (the `.env` itself is gitignored and not baked into the image).
 
 ## Technical design
 
@@ -81,13 +81,17 @@ Backend available at http://localhost:8000
 
 ### Quick commands
 ```bash
-# Run the full stack in Docker (linux/mac)
+# Run the full stack in Docker (linux/mac); reads OPENROUTER_API_KEY from .env
 scripts/start-linux.sh        # → http://localhost:8000
 scripts/stop-linux.sh
 
 # Backend tests
 cd backend && uv run pytest
 
-# Frontend dev iteration (no Docker, no backend)
-cd frontend && npm run dev    # → http://localhost:3000
+# Frontend dev iteration against a Docker backend (chat needs the API)
+# Terminal 1: backend
+scripts/start-linux.sh
+# Terminal 2: frontend pointing at the Docker backend
+cd frontend && NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev
+# → http://localhost:3000 (CORS in backend allows this origin)
 ```
