@@ -59,7 +59,9 @@ def test_login_route_served_when_built(client):
     assert b"sign in" in r.content.lower()
 
 
-def test_unknown_api_path_returns_404(client):
+def test_unknown_api_path_returns_json_404(client):
+    """Unknown /api paths must not fall through to the static frontend mount."""
     c, _ = client
     r = c.get("/api/does-not-exist")
     assert r.status_code == 404
+    assert r.headers["content-type"].startswith("application/json")

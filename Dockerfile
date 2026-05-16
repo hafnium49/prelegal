@@ -13,7 +13,7 @@ RUN npm run build
 # ---------- Stage 2: backend + static frontend ----------
 FROM python:3.12-slim
 
-COPY --from=ghcr.io/astral-sh/uv:0.8 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /bin/
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \

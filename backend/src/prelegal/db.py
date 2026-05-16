@@ -12,10 +12,6 @@ CREATE TABLE users (
 
 
 def init_db(db_path: Path) -> None:
-    """Recreate the SQLite database from scratch.
-
-    Per KAN-4: the temporary database is rebuilt on every container boot.
-    """
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()

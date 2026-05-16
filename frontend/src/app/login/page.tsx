@@ -22,7 +22,7 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold text-[#032147]">
           Sign in to Prelegal
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-[#888888]">
           Foundation prototype — any name and email will let you in.
         </p>
 
@@ -35,7 +35,7 @@ export default function LoginPage() {
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-[#209dd7] focus:outline-none focus:ring-1 focus:ring-[#209dd7]"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/40"
             />
           </label>
           <label className="block">
@@ -46,7 +46,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-[#209dd7] focus:outline-none focus:ring-1 focus:ring-[#209dd7]"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/40"
             />
           </label>
 

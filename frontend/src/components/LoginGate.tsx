@@ -1,40 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, type Session } from "@/lib/session";
-
-const STORAGE_KEY = "prelegal.user";
-
-// Cache the parsed snapshot so getSnapshot is referentially stable between
-// renders (useSyncExternalStore requires this to avoid infinite loops).
-let cachedRaw: string | null = null;
-let cachedSession: Session | null = null;
-let cacheInitialized = false;
-
-function getSnapshot(): Session | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (cacheInitialized && raw === cachedRaw) return cachedSession;
-  cachedRaw = raw;
-  cachedSession = readSession();
-  cacheInitialized = true;
-  return cachedSession;
-}
-
-function subscribe(callback: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-}
-
-function getServerSnapshot(): Session | null {
-  return null;
-}
 
 type Props = {
   children: (session: Session) => ReactNode;
@@ -42,21 +10,21 @@ type Props = {
 
 export function LoginGate({ children }: Props) {
   const router = useRouter();
-  const session = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot,
-  );
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    if (session === null) {
+    const s = readSession();
+    if (!s) {
       router.replace("/login");
+      return;
     }
-  }, [session, router]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot mount-time read from localStorage; useSyncExternalStore is overkill for a fake-login gate
+    setSession(s);
+  }, [router]);
 
   if (session === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
+      <div className="flex min-h-screen items-center justify-center text-sm text-[#888888]">
         Loading…
       </div>
     );
