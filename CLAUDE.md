@@ -6,7 +6,7 @@ This is a SaaS product to allow users to draft legal agreements based on templat
 
 `@catalog.json`
 
-V1 scope: only the Mutual NDA document is supported; broader template support is planned for later tickets. The backend, Docker packaging, fake login, and the AI chat for the MNDA already exist (see "Implementation status" below).
+V1 status: all 12 Common Paper templates listed in `catalog.json` are supported via a freeform AI chat (Cerebras `gpt-oss-120b` via OpenRouter/LiteLLM with Structured Outputs). Users register, sign in, and each user's drafts are auto-saved to a personal sidebar (database is reset each container boot). The AI gathers cover-page fields, populates a live preview with a draft disclaimer, and lets the user save with the browser's Print → Save as PDF.
 
 ## Development process
 
@@ -82,9 +82,17 @@ Backend available at http://localhost:8000
   - `Dockerfile` adds `COPY templates /app/templates` and `COPY catalog.json /app/catalog.json`.
   - `react-markdown`, `rehype-raw`, `remark-gfm` added to the frontend.
   - 8 chat tests + 3 documents tests in `backend/tests/` (rewritten for the new schema).
+- **KAN-7** — multiple users + per-user drafts + polish:
+  - Real auth: `users` table now has `password_hash` (bcrypt); `sessions` table holds opaque random session tokens; `documents` table holds per-user drafts. `POST /api/auth/{register,login,logout}` + `GET /api/auth/me` with an httponly cookie. `secure` flag is env-driven (`PRELEGAL_COOKIE_SECURE`, default false for HTTP dev).
+  - Endpoint shape: `/api/documents` (catalog) was renamed to `/api/catalog`; `/api/my-documents/**` is per-user CRUD. `/api/chat` and `/api/my-documents/**` are gated with `require_user`; `/api/catalog`, `/api/health`, and the auth endpoints are public.
+  - Auto-save: every form mutation triggers a debounced (500ms) save to `/api/my-documents`. A ref guards against duplicate-doc creation across React re-render boundaries.
+  - Sidebar: `<DocumentsSidebar>` lists drafts (auto-titled `"<Doc name> — <party 1 company>"`), supports +New / select / delete.
+  - Auth + disclaimer: `<AuthGate>` redirects to `/login` if no session. Persistent yellow disclaimer banner (`#ecad0a`) above the workspace + footer on the printed document.
+  - Polish: branded login/register pages (gradient + wordmark + palette-driven inputs), `<Wordmark>` component, sticky header.
+  - Tests: `test_auth.py` (8), `test_my_documents.py` (6 — including cross-user isolation), updated `test_chat.py` for auth gating.
+  - Frontend deps unchanged. Backend adds `bcrypt`.
 
 ### Not yet implemented (future tickets)
-- Real authentication (sign-up, sign-in, password hashing, sessions) — the `users` table schema exists but no endpoints touch it.
 - CI workflow.
 
 ### Quick commands

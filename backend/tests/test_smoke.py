@@ -31,7 +31,8 @@ def test_db_recreated_on_each_boot(tmp_path, monkeypatch):
     init_db(db_path)
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            "INSERT INTO users (name, email) VALUES (?, ?)", ("Alice", "a@example.com")
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            ("Alice", "a@example.com", "fake-hash"),
         )
         conn.commit()
         assert conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 1

@@ -17,8 +17,8 @@ def _payload(reply: str, **updates) -> str:
     return json.dumps({"reply": reply, "form_updates": form_updates})
 
 
-def test_chat_sets_document_type(client):
-    c, _ = client
+def test_chat_sets_document_type(auth_client):
+    c, _ = auth_client
     payload = _payload("Sure, let's do an MNDA.", document_type="mutual_nda")
     with patch("prelegal.llm.completion", return_value=_fake_completion(payload)):
         r = c.post(
@@ -32,8 +32,8 @@ def test_chat_sets_document_type(client):
     assert r.json()["form_updates"]["document_type"] == "mutual_nda"
 
 
-def test_chat_extracts_field_values(client):
-    c, _ = client
+def test_chat_extracts_field_values(auth_client):
+    c, _ = auth_client
     payload = _payload(
         "Got it, recorded the purpose.",
         field_values={"purpose": "evaluate a partnership"},
@@ -54,8 +54,8 @@ def test_chat_extracts_field_values(client):
     assert r.json()["form_updates"]["field_values"]["purpose"] == "evaluate a partnership"
 
 
-def test_chat_extracts_party_updates(client):
-    c, _ = client
+def test_chat_extracts_party_updates(auth_client):
+    c, _ = auth_client
     payload = _payload(
         "Recorded party 1.",
         parties=[{"company": "Acme Inc."}, None],
@@ -78,8 +78,8 @@ def test_chat_extracts_party_updates(client):
     assert parties[1] is None
 
 
-def test_chat_system_prompt_includes_catalog_when_no_doc(client):
-    c, _ = client
+def test_chat_system_prompt_includes_catalog_when_no_doc(auth_client):
+    c, _ = auth_client
     payload = _payload("Which document do you want?")
     with patch(
         "prelegal.llm.completion", return_value=_fake_completion(payload)
@@ -98,8 +98,8 @@ def test_chat_system_prompt_includes_catalog_when_no_doc(client):
     assert "No document type selected" in sys_msg["content"]
 
 
-def test_chat_system_prompt_includes_selected_spec_fields(client):
-    c, _ = client
+def test_chat_system_prompt_includes_selected_spec_fields(auth_client):
+    c, _ = auth_client
     payload = _payload("What is the purpose?")
     with patch(
         "prelegal.llm.completion", return_value=_fake_completion(payload)
@@ -122,8 +122,8 @@ def test_chat_system_prompt_includes_selected_spec_fields(client):
     assert "Delaware" in sys_msg  # current form state included
 
 
-def test_chat_502_on_llm_exception(client):
-    c, _ = client
+def test_chat_502_on_llm_exception(auth_client):
+    c, _ = auth_client
     with patch("prelegal.llm.completion", side_effect=RuntimeError("upstream")):
         r = c.post(
             "/api/chat",
@@ -135,8 +135,8 @@ def test_chat_502_on_llm_exception(client):
     assert r.status_code == 502
 
 
-def test_chat_502_on_invalid_json(client):
-    c, _ = client
+def test_chat_502_on_invalid_json(auth_client):
+    c, _ = auth_client
     with patch(
         "prelegal.llm.completion",
         return_value=_fake_completion("not json"),
@@ -151,8 +151,8 @@ def test_chat_502_on_invalid_json(client):
     assert r.status_code == 502
 
 
-def test_chat_502_on_empty_choices(client):
-    c, _ = client
+def test_chat_502_on_empty_choices(auth_client):
+    c, _ = auth_client
     fake = MagicMock()
     fake.choices = []
     with patch("prelegal.llm.completion", return_value=fake):
