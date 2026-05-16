@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MndaFormUI } from "@/components/MndaForm";
+import { ChatPane } from "@/components/ChatPane";
 import { MndaPreview } from "@/components/MndaPreview";
 import { LoginGate } from "@/components/LoginGate";
 import { defaultMndaForm, type MndaForm } from "@/lib/mnda";
@@ -33,15 +33,15 @@ function MndaWorkspace({ userName }: { userName: string }) {
             <h1 className="text-xl font-semibold text-[#032147]">
               Mutual NDA creator
             </h1>
-            <p className="text-sm text-slate-600">
-              Fill in the form to generate a Common Paper Mutual NDA. Use the
-              download button to save it as a PDF.
+            <p className="text-sm text-[#888888]">
+              Chat with the assistant to fill out your MNDA. Use the download
+              button to save it as a PDF.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-600 sm:inline">
+            <span className="hidden text-sm text-[#888888] sm:inline">
               Signed in as{" "}
-              <strong className="font-medium">{userName}</strong>
+              <strong className="font-medium text-slate-700">{userName}</strong>
             </span>
             <button
               type="button"
@@ -61,12 +61,8 @@ function MndaWorkspace({ userName }: { userName: string }) {
         </header>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-          <section className="no-print h-fit rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-4">
-            <MndaFormUI
-              form={form}
-              onChange={setForm}
-              onReset={() => setForm(defaultMndaForm())}
-            />
+          <section className="no-print h-[calc(100vh-12rem)] lg:sticky lg:top-4">
+            <ChatPane form={form} onFormUpdate={setForm} />
           </section>
           <section className="document-pane">
             <MndaPreview form={form} />
