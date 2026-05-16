@@ -61,7 +61,7 @@ Backend available at http://localhost:8000
   - FastAPI + uv backend at `backend/` (`src/prelegal/`), serves `GET /api/health` and an explicit `/api/{path:path}` JSON 404 catch-all so unknown API paths never fall through to the static mount.
   - Ephemeral SQLite at `/data/prelegal.db` inside the container; `prelegal.db.init_db()` drops & recreates the `users` table on every container boot (no volume mount, by design).
   - Next.js builds via `output: "export"` and is served as static files by FastAPI at `/` — single container, single port (8000).
-  - Fake login at `/login` (any name + email; stored in `localStorage["prelegal.user"]`); `<LoginGate>` redirects unauthenticated visitors; Sign out clears storage and returns to `/login`. No real auth wired up.
+  - Fake login at `/login` storing `{name, email}` in `localStorage` — superseded by real auth in KAN-7.
   - Multi-stage `Dockerfile` (node:20-alpine builds frontend → python:3.12-slim + pinned `uv 0.8.22` runs backend).
   - Cross-platform scripts in `scripts/`: `start/stop-{mac,linux}.sh`, `start/stop-windows.ps1`.
   - Pytest smoke suite in `backend/tests/test_smoke.py` (health, users schema, fresh-DB-per-boot, JSON 404, static index/login when built).
@@ -75,7 +75,7 @@ Backend available at http://localhost:8000
 - **KAN-6** — all 12 catalog document types + generic renderer:
   - `backend/src/prelegal/documents.py` — declarative `DocumentSpec` (id, fields, party_roles) for all 12 catalog entries. Name/description/source_url loaded from `catalog.json` at startup (single source of truth).
   - `backend/src/prelegal/templates.py` — bundled-template reader (`/app/templates` in Docker, falls back to repo root for `uv run`).
-  - `GET /api/documents` — catalog with full field specs. `GET /api/documents/{id}/template` — the raw markdown for any doc.
+  - Public catalog endpoints (renamed to `/api/catalog` in KAN-7): `GET /api/catalog` returns the full field specs; `GET /api/catalog/{id}/template` returns the raw markdown for any doc.
   - Chat: schema now generic — `FormState = {document_type, field_values: dict, parties: list}`. `reasoning_effort` bumped to `"medium"` (the skill example's `"low"` silently dropped party fields). Dynamic system prompt lists the catalog + per-doc field/party spec + few-shot extraction examples + an "always ask follow-on" + a "verify before declaring complete" rule. AI handles "I want an unsupported doc" by suggesting the closest catalog match.
   - `frontend/src/components/DocumentPreview.tsx` — generic renderer (cover-page summary + signature block + `react-markdown` body) replacing `<MndaPreview>`. The old `MndaForm.tsx`, `MndaPreview.tsx`, `PlaceholderText.tsx`, `mnda.ts`, `mnda-standard-terms.ts` are deleted.
   - `ChatPane` now auto-focuses the input and refocuses after every reply (success or error).
