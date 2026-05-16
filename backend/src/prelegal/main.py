@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,13 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .db import init_db
-from .routers import chat, documents, health
+from .deps import _db_path
+from .routers import auth, catalog, chat, health, my_documents
 
 STATIC_DIR = Path(__file__).parent / "static"
-
-
-def _db_path() -> Path:
-    return Path(os.getenv("PRELEGAL_DB_PATH", "/data/prelegal.db"))
 
 
 @asynccontextmanager
@@ -27,31 +23,29 @@ def create_app() -> FastAPI:
     load_dotenv()
     app = FastAPI(title="Prelegal", lifespan=lifespan)
 
-    # Allow the dev-mode frontend (next dev on :3000) to call the API.
-    # In production the frontend is served same-origin by FastAPI, so CORS
-    # is never exercised.
+    # Dev frontend (`npm run dev` on :3000) needs CORS + credentials so the
+    # session cookie travels across origins. Production is same-origin and
+    # this middleware is a no-op.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:3000"],
-        allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     app.include_router(health.router, prefix="/api")
+    app.include_router(auth.router, prefix="/api")
+    app.include_router(catalog.router, prefix="/api")
+    app.include_router(my_documents.router, prefix="/api")
     app.include_router(chat.router, prefix="/api")
-    app.include_router(documents.router, prefix="/api")
 
-    # JSON 404 for unknown /api paths so they don't fall through to the
-    # static mount, which would otherwise return Next's HTML 404 page.
     @app.api_route(
         "/api/{_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"]
     )
     async def api_not_found(_path: str):
         raise HTTPException(status_code=404, detail="Not Found")
 
-    # Each frontend route is exported to its own index.html (Next.js
-    # `trailingSlash: true`), so html=True covers reloads at `/` and
-    # `/login/` directly. Unknown paths fall through to Next's 404.html.
     if STATIC_DIR.is_dir():
         app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 

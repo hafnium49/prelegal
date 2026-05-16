@@ -9,6 +9,7 @@ import type {
   FormState,
   PartyValue,
 } from "@/lib/documents";
+import { DisclaimerFooter } from "./DisclaimerBanner";
 
 type Props = {
   spec: DocumentSpec | null;
@@ -51,6 +52,8 @@ export function DocumentPreview({ spec, form, templateMarkdown }: Props) {
           {templateMarkdown}
         </ReactMarkdown>
       </section>
+
+      <DisclaimerFooter />
     </article>
   );
 }
