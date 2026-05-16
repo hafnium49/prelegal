@@ -32,6 +32,10 @@ RUN uv sync --no-dev
 # Drop built frontend into the static dir served by FastAPI
 COPY --from=frontend-builder /app/frontend/out ./src/prelegal/static
 
+# Bundle the legal-document templates + catalog so the backend can serve them
+COPY templates /app/templates
+COPY catalog.json /app/catalog.json
+
 # Ephemeral SQLite DB lives here; not volume-mounted, so it resets on each boot
 RUN mkdir -p /data
 

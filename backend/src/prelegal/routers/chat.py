@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..llm import ChatMessage, ChatResponse, run_turn
+from ..llm import ChatMessage, ChatResponse, FormState, run_turn
 
 router = APIRouter()
 
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
-    form: dict
+    form: FormState
 
 
 @router.post("/chat", response_model=ChatResponse)
