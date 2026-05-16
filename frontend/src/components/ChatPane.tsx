@@ -12,25 +12,27 @@ import {
   sendChat,
   type ChatMessage,
 } from "@/lib/chat";
-import type { MndaForm } from "@/lib/mnda";
+import type { DocumentSpec, FormState } from "@/lib/documents";
 
 const INITIAL_GREETING: ChatMessage = {
   role: "assistant",
   content:
-    "Hi! I'll help you put together a Mutual Non-Disclosure Agreement. To get started, what's the purpose of this NDA? (For example: \"evaluating a potential partnership\" or \"discussing a possible acquisition\".)",
+    "Hi! I can help you draft any of our supported legal agreements — NDAs, pilot agreements, CSAs, SLAs, partnership agreements, and more. What kind of document are you trying to put together?",
 };
 
 type Props = {
-  form: MndaForm;
-  onFormUpdate: (form: MndaForm) => void;
+  form: FormState;
+  specs: DocumentSpec[];
+  onFormUpdate: (form: FormState) => void;
 };
 
-export function ChatPane({ form, onFormUpdate }: Props) {
+export function ChatPane({ form, specs, onFormUpdate }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_GREETING]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -38,6 +40,11 @@ export function ChatPane({ form, onFormUpdate }: Props) {
       behavior: "smooth",
     });
   }, [messages, pending]);
+
+  // Return focus to the input after a turn settles (success or error).
+  useEffect(() => {
+    if (!pending) inputRef.current?.focus();
+  }, [pending]);
 
   const submit = async () => {
     const trimmed = input.trim();
@@ -54,7 +61,7 @@ export function ChatPane({ form, onFormUpdate }: Props) {
         ...prev,
         { role: "assistant", content: response.reply },
       ]);
-      onFormUpdate(mergeFormUpdates(form, response.form_updates));
+      onFormUpdate(mergeFormUpdates(form, response.form_updates, specs));
     } catch (err) {
       setError(
         err instanceof Error
@@ -108,10 +115,12 @@ export function ChatPane({ form, onFormUpdate }: Props) {
       >
         <div className="flex gap-2">
           <textarea
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             rows={2}
+            autoFocus
             placeholder="Type your reply… (Enter to send, Shift+Enter for newline)"
             disabled={pending}
             className="flex-1 resize-none rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/40 disabled:bg-slate-50"

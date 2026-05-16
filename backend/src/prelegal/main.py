@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .db import init_db
-from .routers import chat, health
+from .routers import chat, documents, health
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix="/api")
     app.include_router(chat.router, prefix="/api")
+    app.include_router(documents.router, prefix="/api")
 
     # JSON 404 for unknown /api paths so they don't fall through to the
     # static mount, which would otherwise return Next's HTML 404 page.

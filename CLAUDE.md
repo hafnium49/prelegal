@@ -72,11 +72,19 @@ Backend available at http://localhost:8000
   - CORS in `backend/src/prelegal/main.py` allows `http://localhost:3000` for the dev workflow (`npm run dev` against a Docker backend); production is same-origin so CORS isn't exercised.
   - `pyproject.toml` adds `litellm`, `pydantic`, `python-dotenv`. `OPENROUTER_API_KEY` is loaded by `load_dotenv()` in `create_app()`.
   - 6 new pytest cases in `backend/tests/test_chat.py` cover happy path, party updates, LLM exceptions, malformed JSON, empty-choices, and the system-message contents (all using a mocked `litellm.completion`).
+- **KAN-6** — all 12 catalog document types + generic renderer:
+  - `backend/src/prelegal/documents.py` — declarative `DocumentSpec` (id, fields, party_roles) for all 12 catalog entries. Name/description/source_url loaded from `catalog.json` at startup (single source of truth).
+  - `backend/src/prelegal/templates.py` — bundled-template reader (`/app/templates` in Docker, falls back to repo root for `uv run`).
+  - `GET /api/documents` — catalog with full field specs. `GET /api/documents/{id}/template` — the raw markdown for any doc.
+  - Chat: schema now generic — `FormState = {document_type, field_values: dict, parties: list}`. `reasoning_effort` bumped to `"medium"` (the skill example's `"low"` silently dropped party fields). Dynamic system prompt lists the catalog + per-doc field/party spec + few-shot extraction examples + an "always ask follow-on" + a "verify before declaring complete" rule. AI handles "I want an unsupported doc" by suggesting the closest catalog match.
+  - `frontend/src/components/DocumentPreview.tsx` — generic renderer (cover-page summary + signature block + `react-markdown` body) replacing `<MndaPreview>`. The old `MndaForm.tsx`, `MndaPreview.tsx`, `PlaceholderText.tsx`, `mnda.ts`, `mnda-standard-terms.ts` are deleted.
+  - `ChatPane` now auto-focuses the input and refocuses after every reply (success or error).
+  - `Dockerfile` adds `COPY templates /app/templates` and `COPY catalog.json /app/catalog.json`.
+  - `react-markdown`, `rehype-raw`, `remark-gfm` added to the frontend.
+  - 8 chat tests + 3 documents tests in `backend/tests/` (rewritten for the new schema).
 
 ### Not yet implemented (future tickets)
 - Real authentication (sign-up, sign-in, password hashing, sessions) — the `users` table schema exists but no endpoints touch it.
-- Catalog / template API surface; today the frontend has the MNDA template hard-coded in `frontend/src/lib/mnda-standard-terms.ts`.
-- Document support beyond Mutual NDA (BAA, CSA, DPA, PSA, SLA, etc. — all listed in `catalog.json` but not yet generated).
 - CI workflow.
 
 ### Quick commands
