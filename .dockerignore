@@ -1,0 +1,33 @@
+.git
+.gitignore
+.github
+.claude
+.vscode
+.idea
+
+# Python
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.venv
+
+# Node / Next.js
+**/node_modules
+**/.next
+**/out
+
+# Build / dist
+**/dist
+**/build
+**/*.egg-info
+
+# Env / logs
+.env
+.env.*
+*.log
+
+# Docs (not needed in image)
+README.md
+**/CLAUDE.md
+**/AGENTS.md

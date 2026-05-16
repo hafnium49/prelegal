@@ -100,3 +100,6 @@ next-env.d.ts
 *.local
 tmp/
 temp/
+
+# Playwright MCP page snapshots (test artifacts; not source)
+.playwright-mcp/
